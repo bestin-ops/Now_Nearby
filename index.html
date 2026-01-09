@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NowNearby - AI Service Finder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="container">
+            <header class="app-header">
+                <div class="header-content">
+                    <div class="brand-wrapper">
+                        <div class="logo-container">
+                            <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <h1 class="logo-text">NowNearby</h1>
+                        </div>
+                        <p class="subtitle">AI-Powered Local Help, Instantly.</p>
+                    </div>
+            
+                    <div class="header-controls">
+                        <button id="theme-toggle" class="theme-btn" aria-label="Toggle Dark Mode">
+                            <svg class="icon theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            <div class="search-box">
+                <textarea id="userInput" placeholder="Describe your issue... (e.g., 'My kitchen tap is leaking water everywhere')"></textarea>
+                <button class="main-btn" onclick="searchService()">
+                    <span>Find Help Now</span>
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </button>
+            </div>
+
+            <div id="results">
+                </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
