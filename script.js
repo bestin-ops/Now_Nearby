@@ -73,8 +73,8 @@ async function searchService() {
     `;
 
     try {
-        // Fetch from the backend
-        const response = await fetch('http://localhost:3000/find-service', {
+        // ✅ CHANGED: Use relative path (works on localhost AND Cloud)
+        const response = await fetch('/find-service', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ description })
@@ -149,6 +149,6 @@ async function searchService() {
 
     } catch (err) {
         console.error(err);
-        resultsDiv.innerHTML = `<p style="color: var(--urgent-red); text-align:center;">Error connecting to server. Make sure 'node server.js' is running!</p>`;
+        resultsDiv.innerHTML = `<p style="color: var(--urgent-red); text-align:center;">Error connecting to server. Make sure the backend is running!</p>`;
     }
 }
