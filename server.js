@@ -9,33 +9,33 @@ console.log("🔑 API Key Loaded:", process.env.GEMINI_KEY ? "YES ✅" : "NO ❌
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static('public')); // ✅ Serves your frontend from the 'public' folder
 
 // --- FIREBASE SETUP ---
 try {
-    const serviceAccount = require('./serviceAccount.json');
+    let serviceAccount;
+    
+    // ✅ CLOUD LOGIC: Checks for Environment Variable first
+    if (process.env.FIREBASE_SECRETS) {
+        serviceAccount = JSON.parse(process.env.FIREBASE_SECRETS);
+    } else {
+        // Local fallback
+        serviceAccount = require('./serviceAccount.json');
+    }
+
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount)
     });
     console.log("🔥 Firebase initialized.");
 } catch (error) {
-    console.error("❌ Firebase Error: Missing serviceAccount.json");
-    process.exit(1);
+    console.error("❌ Firebase Error:", error.message);
 }
-const db = admin.firestore();
 
-// --- GEMINI SETUP ---
+const db = admin.firestore();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
 
-// --- HELPER FUNCTION: Fixes Capitalization ---
-// This turns "stone worker" into "Stone Worker" (Capitalizes EVERY word)
 function toTitleCase(str) {
-    return str.replace(
-        /\w\S*/g,
-        function(txt) {
-            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-        }
-    );
+    return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 }
 
 // --- HYBRID AI LOGIC ---
@@ -45,24 +45,16 @@ function localClassify(text) {
 
     if (input.includes('ambulance') || input.includes('emergency') || input.includes('hospital') || input.includes('hurt')) 
         return { service: 'Ambulance', urgency: 'Critical' };
-
     if (input.includes('plumber') || input.includes('leak') || input.includes('pipe') || input.includes('water')) 
         return { service: 'Plumber', urgency: 'High' };
-
     if (input.includes('electrician') || input.includes('spark') || input.includes('wire') || input.includes('power')) 
         return { service: 'Electrician', urgency: 'High' };
-
     if (input.includes('carpenter') || input.includes('wood') || input.includes('furniture')) 
         return { service: 'Carpenter', urgency: 'Medium' };
-
-    // ✅ FIXED: Includes 'mason'
     if (input.includes('stone') || input.includes('granite') || input.includes('mason') || input.includes('rock')) 
         return { service: 'Stone Worker', urgency: 'Medium' };
-
     if (input.includes('brick') || input.includes('wall') || input.includes('mortar')) 
         return { service: 'Bricklayer', urgency: 'Medium' };
-
-    // ✅ Catch-all
     if (input.includes('repair') || input.includes('help') || input.includes('fix')) 
         return { service: 'General', urgency: 'Low' };
 
@@ -76,18 +68,15 @@ app.post('/find-service', async (req, res) => {
     try {
         console.log(`\n📥 New Request: "${description}"`);
 
-        // STEP 1: Local AI
         const localResult = localClassify(description);
         if (localResult) {
             console.log(`⚡ [Local AI] Match: ${localResult.service}`);
             aiResponse = localResult;
         } else {
-            // STEP 2: Gemini AI
             try {
                 console.log("🧠 Asking Google AI...");
                 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
                 const prompt = `Classify request: "${description}". Return JSON: { "service": "Plumber" | "Electrician" | "Stone Worker" | "Bricklayer" | "Ambulance" | "General", "urgency": "High" | "Medium" }`;
-                
                 const result = await model.generateContent(prompt);
                 const text = result.response.text().replace(/```json|```/g, "").trim();
                 aiResponse = JSON.parse(text);
@@ -97,9 +86,6 @@ app.post('/find-service', async (req, res) => {
             }
         }
 
-        // --- STEP 3: DATABASE QUERY (The Important Fix) ---
-        
-        // Use the helper to force "Stone Worker" (Capital S, Capital W)
         const serviceQuery = toTitleCase(aiResponse.service); 
         console.log(`🔍 Searching DB for: "${serviceQuery}"`);
 
@@ -120,5 +106,5 @@ app.post('/find-service', async (req, res) => {
     }
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
